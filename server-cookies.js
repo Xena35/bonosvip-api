@@ -145,7 +145,13 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     ready: isReady,
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    debug: {
+      cookies_length: COOKIES.length,
+      cookies_preview: COOKIES.substring(0, 100),
+      has_cookies_env: !!process.env.BONOSVIP_COOKIES,
+      cookies_env_length: (process.env.BONOSVIP_COOKIES || '').length
+    }
   });
 });
 
@@ -188,3 +194,4 @@ process.on('unhandledRejection', (error) => {
 });
 
 module.exports = app;
+
