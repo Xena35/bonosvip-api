@@ -15,30 +15,28 @@ const COOKIES = COOKIES_RAW.trim()
   .replace(/;\s*/g, '; ');  // Reemplaza ; o ;[espacios] con "; " (formato correcto)
 const VALIDADOR_NAME = process.env.VALIDADOR_NAME || 'Lido San Telmo';
 
-// Estado del servidor
-let isReady = false;
+// Función para obtener cookies actualizadas
+function getCookies() {
+  const raw = process.env.BONOSVIP_COOKIES || '';
+  return raw.trim()
+    .replace(/\n/g, '')
+    .replace(/\r/g, '')
+    .replace(/;\s*/g, '; ');
+}
 
-// Inicialización
-function initialize() {
-  console.log('🔍 Inicializando servidor...');
-  console.log(`📊 Cookie length: ${COOKIES.length} caracteres`);
-  console.log(`📊 Cookie preview: ${COOKIES.substring(0, 50)}...`);
-  
-  if (COOKIES && COOKIES.length > 100) {
-    isReady = true;
-    console.log('✅ Servidor inicializado con cookies');
-  } else {
-    console.warn('⚠️ BONOSVIP_COOKIES no configurado correctamente');
-    console.warn(`   Cookie recibida tiene ${COOKIES.length} caracteres (necesita >100)`);
-    isReady = false;
-  }
+// Función para verificar si está listo
+function isSystemReady() {
+  const cookies = getCookies();
+  return cookies && cookies.length > 100;
 }
 
 /**
  * Función para validar un bono
  */
 async function validateVoucher(voucherCode) {
-  if (!isReady) {
+  const COOKIES = getCookies();
+  
+  if (!COOKIES || COOKIES.length < 100) {
     return {
       success: false,
       error: 'Servidor no configurado correctamente. Falta BONOSVIP_COOKIES.'
@@ -146,13 +144,14 @@ async function validateVoucher(voucherCode) {
  * Endpoint de salud
  */
 app.get('/health', (req, res) => {
+  const cookies = getCookies();
   res.json({
     status: 'ok',
-    ready: isReady,
+    ready: isSystemReady(),
     uptime: process.uptime(),
     debug: {
-      cookies_length: COOKIES.length,
-      cookies_preview: COOKIES.substring(0, 100),
+      cookies_length: cookies.length,
+      cookies_preview: cookies.substring(0, 100),
       has_cookies_env: !!process.env.BONOSVIP_COOKIES,
       cookies_env_length: (process.env.BONOSVIP_COOKIES || '').length
     }
@@ -189,7 +188,7 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  initialize();
+  console.log(`✅ Sistema listo: ${isSystemReady()}`);
 });
 
 // Manejar errores no capturados
