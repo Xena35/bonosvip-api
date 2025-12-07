@@ -6,7 +6,9 @@ const app = express();
 app.use(express.json());
 
 // Cookies de sesión (configuradas como variables de entorno)
-const COOKIES = process.env.BONOSVIP_COOKIES || '';
+// Limpiamos la cookie eliminando espacios al inicio/final y saltos de línea
+const COOKIES_RAW = process.env.BONOSVIP_COOKIES || '';
+const COOKIES = COOKIES_RAW.trim().replace(/\n/g, '').replace(/\r/g, '');
 const VALIDADOR_NAME = process.env.VALIDADOR_NAME || 'Lido San Telmo';
 
 // Estado del servidor
@@ -14,11 +16,16 @@ let isReady = false;
 
 // Inicialización
 function initialize() {
+  console.log('🔍 Inicializando servidor...');
+  console.log(`📊 Cookie length: ${COOKIES.length} caracteres`);
+  console.log(`📊 Cookie preview: ${COOKIES.substring(0, 50)}...`);
+  
   if (COOKIES && COOKIES.length > 100) {
     isReady = true;
     console.log('✅ Servidor inicializado con cookies');
   } else {
     console.warn('⚠️ BONOSVIP_COOKIES no configurado correctamente');
+    console.warn(`   Cookie recibida tiene ${COOKIES.length} caracteres (necesita >100)`);
     isReady = false;
   }
 }
