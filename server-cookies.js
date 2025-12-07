@@ -8,7 +8,11 @@ app.use(express.json());
 // Cookies de sesión (configuradas como variables de entorno)
 // Limpiamos la cookie eliminando espacios al inicio/final y saltos de línea
 const COOKIES_RAW = process.env.BONOSVIP_COOKIES || '';
-const COOKIES = COOKIES_RAW.trim().replace(/\n/g, '').replace(/\r/g, '');
+// Aseguramos que haya espacio después de cada ; (formato correcto de cookies HTTP)
+const COOKIES = COOKIES_RAW.trim()
+  .replace(/\n/g, '')
+  .replace(/\r/g, '')
+  .replace(/;\s*/g, '; ');  // Reemplaza ; o ;[espacios] con "; " (formato correcto)
 const VALIDADOR_NAME = process.env.VALIDADOR_NAME || 'Lido San Telmo';
 
 // Estado del servidor
@@ -194,4 +198,3 @@ process.on('unhandledRejection', (error) => {
 });
 
 module.exports = app;
-
